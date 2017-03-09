@@ -751,7 +751,7 @@ span.dark{
 #nav
 {
 	font-family: 'Trebuchet MS', arial, sans-serif;
-	text-transform: uppercase;
+	/*text-transform: uppercase;*/
 	font-size: 0;
 	height: 610px;
 }
@@ -1282,4 +1282,13 @@ ul#contactDetails li
 	color: #eeeeee;
 	font-size: large;
     text-decoration: none;
+}
+.teacher{
+	font-weight: bolder;
+	color: #eeeeee;
+	font-size: large;
+	text-decoration: none;
+}
+.teacher .projectLink{
+	text-decoration: none;
 }
