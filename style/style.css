@@ -1292,3 +1292,8 @@ ul#contactDetails li
 .teacher .projectLink{
 	text-decoration: none;
 }
+.blogroll{
+	/*text-align: center;*/
+	color: #a1eeee;
+	text-decoration: none;
+}
