@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detail Of Project2 </title>
+    <style type="text/css">
+        body{
+            /*margin: 0px;*/
+            /*padding: 0px;*/
+            background-color: #ced0ab;
+            margin-left: 5%;
+        }
+        /*h1,h2,h3{*/
+            /*color: white;*/
+        /*}*/
+        a{
+            text-decoration: none;
+            font-size: 15pt;
+            font-weight: 500;
+            font-family:  Helvetica, 'Hiragino Sans GB', 'Microsoft Yahei', '微软雅黑', Arial, sans-serif;
+            color: aliceblue;
+        }
+        .intro{
+            display:block ;
+            border-radius: 5px;
+            background-color: #ced0ab;
+            /*background-color: azure;*/
+
+            font-weight: 300;
+            font-size: 15pt;
+            width: 90%;
+            align-content: center;
+            /*margin-left: 2%;*/
+        }
+        .code{
+            display: block;
+            width: 80%;
+            font-size: 12pt;
+            background-color: white;
+            border-radius: 2px;
+            padding: 5px;
+        }
+        .comment{
+            color: #888888;
+        }
+    </style>
+</head>
+
+<body>
+<h1 id="top">Project2 详解&nbsp; </h1>
+<p class="back"><a href="project2.html">回到项目<<<</a></p>
+<h2>实验概况</h2>
+<div class="intro">
+  <p><address><strong>实验要求</strong></address>&nbsp;&nbsp;制作一个和下图类似的会动的机器人</p>
+  <p>&nbsp;&nbsp;<img src="images/stickman.gif"></p>
+  <p><address><strong>硬件环境</strong></address></p>
+  <p>&nbsp;&nbsp;CPU：Intel(R) Core(TM) i7-4712MQ CPU @ 2.30GHz 2.29GHZ</p>
+    <p>&nbsp;&nbsp;Memory: 8GB</p>
+    <p>&nbsp;&nbsp;Graphics: NVIDIA 353.62 GeForce 840M</p>
+  <p><address><strong>软件环境</strong></address></p>
+   <p>&nbsp;&nbsp;OS: Windows 10 家庭版</p>
+    <p>&nbsp;&nbsp;IDE:WebStorm 2016.2.3</p>
+    <p>&nbsp;&nbsp;Programming Language:WebGL,JavaScript(Three.js)</p>
+    <p><address><strong>WebGL介绍</strong></address></p>
+    <p>&nbsp;&nbsp;<a href="http://baike.baidu.com/link?url=leF534tgUzPlvP-tXhMupPHzn9w87E6sniOq7YauZvGGHE9bHMbEZLSR6jYBr5hUgRZZPElb9NmBluHPkHnkea">
+        百度百科</a>中对WebGL的介绍是：
+    </p>
+    <p>&nbsp;&nbsp;WebGL（全写Web Graphics Library）是一种3D绘图标准，这种绘图技术标准允许把JavaScript和OpenGL ES 2.0结合在一起，
+        通过增加OpenGL ES 2.0的一个JavaScript绑定，WebGL可以为HTML5 Canvas提供硬件3D加速渲染，
+        这样Web开发人员就可以借助系统显卡来在浏览器里更流畅地展示3D场景和模型了，还能创建复杂的导航和数据视觉化。</p>
+    <p>&nbsp;&nbsp;而three.js是JavaScript编写WebGL的第三方库。</p>
+    <p>&nbsp;&nbsp;项目二就是利用three.js库进行编程。</p>
+</div>
+<h2>实验过程</h2>
+<div class="intro">
+<h3>1.作机器人3D图</h3>
+<p>
+&nbsp;&nbsp;首先对将要作的机器人有个基本的设计，比如它的每一部分分别是由什么构成的，这里采取的设计是连接处使用球，其它部分
+    使用矩形或方形，以及对应几何体的大小大概是多少，之后发现有不对劲的地方，再对这些参数进行调节。
+</p>
+<p>
+&nbsp;&nbsp;Three.js中构造球形、长方形的方式如下:
+    <div class="code">
+    <p class="comment">//作出一个球</p>
+    <p class="comment">//几何特性</p>
+    <p>&nbsp;&nbsp;var sphereGeometry = new THREE.SphereGeometry(0.5, 10, 10);</p>
+    <p class="comment">//颜色材质</p>
+    <p>&nbsp;&nbsp;var sphereMaterial = new THREE.MeshLambertMaterial({color: 0x7777ff});</p>
+    <p class="comment">//合成球形</p>
+    <p>var RightHand= new THREE.Mesh(sphereGeometry, sphereMaterial);</p>
+    <p>&nbsp;&nbsp;</p>
+    <p class="comment">//作一个矩形</p>
+    <p>&nbsp;&nbsp;var cubeGeometry = new THREE.BoxGeometry(0.5, 2, 0.5);</p>
+     <p>&nbsp;&nbsp;var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});</p>
+      <p>&nbsp;&nbsp;var LegL=new THREE.Mesh(cubeGeometry,cubeMaterial);</p>
+    <p>&nbsp;&nbsp;</p>
+    <p class="comment">//设置位置，把LegL对象的位置设置在(0,0,0)位置上</p>
+    <p>&nbsp;&nbsp;LegL.position.set(0,0,0);</p>
+    <p>&nbsp;&nbsp;</p>
+    </div>
+<p>
+    &nbsp;&nbsp;最后作出的机器人正视图为：
+<p style="margin-left: 10%"><img src="images/robot.png"></p>
+</p>
+<h3>2.让机器人动起来</h3>
+<p><strong>平移旋转操作</strong></p>
+<p>&nbsp;&nbsp;首先对于行走这个动作，整个身体的每个部位都会随着向前移动，也就是除了局部的平移旋转之外，还必须有个额外的整体向前平移
+    的步长，如何设置这个平移的大小呢，我们必须控制处于机器人迈一步的状态时，头部等基本没有局部运动的部分处于前脚和后脚的中心直线上，
+    所以这里设置的步长大小为一只左脚（或右脚）迈出时向前迈的距离。
+</p>
+<div class="code">
+    <p class="comment">//设置步长</p>
+    <p>&nbsp;&nbsp;step=2*(2+0.5)*Math.sin(30*Math.PI/180);</p>
+    <p>&nbsp;&nbsp;function HeadBodyGo() {</p>
+    <p class="comment">//控制基本没有局部运动的部分向前移动</p>
+    <p class="comment">//对于Tween.js的使用将在下面介绍</p>
+    <p>&nbsp;&nbsp;var Head_tween=new TWEEN.Tween(Head.position);</p>
+    <p>&nbsp;&nbsp;Head_tween.to({x:StartPoint-step},1000);</p>
+    <p>&nbsp;&nbsp;var neck_tween=new TWEEN.Tween(neck.position);</p>
+    <p>&nbsp;&nbsp;neck_tween.to({x:StartPoint-step},1000);</p>
+    <p>&nbsp;&nbsp;var Body_tween=new TWEEN.Tween(Waist.position);</p>
+    <p>&nbsp;&nbsp;Body_tween.to({x:StartPoint-step},1000);</p>
+    <p>&nbsp;&nbsp;Head_tween.start();</p>
+    <p>&nbsp;&nbsp;neck_tween.start();</p>
+    <p>&nbsp;&nbsp;Body_tween.start();</p>
+    <p>&nbsp;&nbsp;}</p>
+</div>
+<p>&nbsp;&nbsp;之后就是一些局部运动的控制了：</p>
+<p>&nbsp;&nbsp;腿部的运动类似于手肘的运动，这里重点解释手肘的局部运动。手肘分为三个部分(Arm1,Elbow,Arm2)，Arm2的运动是在Arm1的基础
+    上的，为了机器人不散架，首先我们是的Arm1，Elbow，Arm2先旋转一个角度Alpha1，之后Arm2在绕着Arm2的一段进行旋转Alpha2,再利用
+    Tween.js控制过程的连续性，就能完成运动。</p>
+<div class="code">
+    <p class="comment"></p>
+    <p>&nbsp;&nbsp;Arm1R_tween_po.to({x:StartPoint-Math.cos(-sita)-step,y:Arm1_temp-Math.sin(-sita)},1000);           </p>
+    <p>&nbsp;&nbsp;Arm1R_tween_ro.to({z:-sita},1000);</p>
+    <p>&nbsp;&nbsp;ElbowR_tween_po.to({x:StartPoint-2.5*Math.cos(-sita)-step,y:Elbow_temp-2.25*Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm1L_tween_po.to({x:StartPoint+Math.cos(-sita)-step,y:Arm1_temp+Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm1L_tween_ro.to({z:sita},1000);</p>
+    <p>&nbsp;&nbsp;ElbowL_tween_po.to({x:StartPoint+2.5*Math.cos(-sita)-step,y:Elbow_temp+2.25*Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm2R_tween_po.to({x:StartPoint-4*Math.cos(-sita)-step,y:Arm2_temp-3*Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm2R_tween_ro.to({z:-sita-10*Math.PI/180},1000);</p>
+    <p>&nbsp;&nbsp;HandR_tween_po.to({x:StartPoint-3.75*Math.cos(-sita)-step,y:Hand_temp-3.75*Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm2L_tween_po.to({x:StartPoint+4*Math.cos(-sita)-step,y:Arm2_temp+3*Math.sin(-sita)},1000);</p>
+    <p>&nbsp;&nbsp;Arm2L_tween_ro.to({z:sita-10*Math.PI/180},1000);</p>
+    <p>&nbsp;&nbsp;HandL_tween_po.to({x:StartPoint+3.75*Math.cos(-sita)-step,y:Hand_temp+3.75*Math.sin(-sita)},1000);</p>
+    </div>
+<p><strong>让动作连续起来</strong></p>
+<p>&nbsp;&nbsp;这里使用的是tween.js来使得定义某个属性在两个值之间的过渡，使得运动的过程是连续的（tweening补间）</p>
+<p>&nbsp;&nbsp;举个例子如下，下面这段代码是让Arm1R.position中的从当前的位置在1秒内移动到下列代码中对应的位置（其它旋转什么的类似）:</p>
+<div class="code">
+    <p>&nbsp;&nbsp;var Arm1R_tween_po=new TWEEN.Tween(Arm1R.position);</p>
+    <p>&nbsp;&nbsp;Arm1R_tween_po.to({x:StartPoint-Math.cos(-sita)-step,y:Arm1_temp-Math.sin(-sita)},1000);
+    </p>
+</div>
+<p><strong>控制运动</strong></p>
+<p>&nbsp;&nbsp;这里使用了一个全局变量count来计数，当count满足一定条件时迈左脚，摆右手，满足另一个条件时迈右脚，摆左手。</p>
+<div class="code">
+    <p>&nbsp;&nbsp;if(count%40==0)</p>
+    <p>&nbsp;&nbsp;{</p>
+    <p>&nbsp;&nbsp;console.log("LeftGo");</p>
+    <p>&nbsp;&nbsp;LeftGo();</p>
+    <p>&nbsp;&nbsp;}</p>
+    <p>&nbsp;&nbsp;else if(count%40==20)</p>
+    <p>&nbsp;&nbsp;{</p>
+    <p>&nbsp;&nbsp;//动作</p>
+    <p>&nbsp;&nbsp;console.log("RightGo");</p>
+    <p>&nbsp;&nbsp;RightGo();</p>
+    <p>&nbsp;&nbsp;}</p>
+</div>
+<p><strong>requestAnimationFrame</strong></p>
+<p>&nbsp;&nbsp;这是three.js中用于制定一个函数，按照浏览器定义的间隔时间调用，浏览器会尽可能保证回话过程平滑、高效。这里我们就可以使得
+把负责渲染的函数放进去，让动画持续进行，代码如下：</p>
+<div class="code">
+    <p>&nbsp;&nbsp;function renderScene() {</p>
+    <p>&nbsp;&nbsp;stats.update();</p>
+    <p>&nbsp;&nbsp;TWEEN.update();</p>
+    <p>&nbsp;&nbsp;...</p>
+    <p class="comment">//再调用</p>
+    <p>&nbsp;&nbsp;requestAnimationFrame(renderScene);</p>
+    <p>&nbsp;&nbsp;renderer.render(scene,camera);</p>
+    <p>&nbsp;&nbsp;}</p>
+</div>
+<h3>
+3.一些其他细节
+</h3>
+<p><strong>视角调节</strong></p>
+<p>&nbsp;&nbsp;Three.js中视角用过设置视椎看向哪个方向来确定，可以类比于相机，如下图:</p>
+<p><img src="images/cam.png"></p>
+<div class="code">
+<p class="comment">//这里的视角即相机视角</p>
+    <p>var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    </p>
+    <p>camera.position.x = -25;</p>
+    <p>>camera.position.y = 40;</p>
+    <p>>camera.position.z = 30;</p>
+    <p class="comment">// camera.position.x=-45;</p>
+    <p class="comment">// camera.position.y=0;</p>
+    <p class="comment">// camera.position.z=0;</p>
+    <p class="comment">//设置相机看向那个方向</p>
+    <p class="comment">camera.lookAt(scene.position);</p>
+</div>
+<p><strong>设置灯光以及阴影</strong></p>
+<div class="code">
+    <p>var spotLight=new THREE.SpotLight(0xffffff);</p>
+    <p>spotLight.position.set(-60,60,-10);</p>
+    <p>spotLight.castShadow=true;</p>
+    <p>scene.add(spotLight);</p>
+
+    <p class="comment">//对于想要有影子的对象，添加这句代码</p>
+    <p>Object.receiveShadow=true;</p>
+
+</div>
+<p><strong>窗口Reload</strong></p>
+<p>&nbsp;&nbsp;当机器人快走出去的时候刷新一下窗口，使得又回到原来的位置继续移动</p>
+<div class="code">
+<p>if(count==1800)</p>
+<p>{</p>
+<p>window.location.reload();</p>
+<p>}</p>
+<p>count++;</p>
+    </div>
+</div>
+<p>&nbsp;&nbsp;<a href="#top">Return>>></a></p>
+</body>
+</html>

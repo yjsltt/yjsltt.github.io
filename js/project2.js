@@ -9,12 +9,10 @@ function init() {
     var StartPoint=40;
     // renderer.setClearColorHex();
     renderer.setClearColor(new THREE.Color(0xEEEEEE));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, 887);
     renderer.shadowMapEnabled=true;
 
-
     var stats=initStats();
-
     // var axes=new THREE.AxisHelper(60);
     // scene.add(axes);
 
@@ -39,7 +37,7 @@ function init() {
 
     //add spotlight
     var spotLight=new THREE.SpotLight(0xffffff);
-    spotLight.position.set(-40,60,-10);
+    spotLight.position.set(-60,60,-10);
     spotLight.castShadow=true;
     scene.add(spotLight);
 
@@ -56,7 +54,7 @@ function init() {
     RightFoot.position.z = 0;
 
     // add the sphere to the scene
-    scene.add(RightFoot);
+    // scene.add(RightFoot);
 
     var LeftFoot=new THREE.Mesh(sphereGeometry, sphereMaterial);
     LeftFoot.receiveShadow=true;
@@ -64,7 +62,7 @@ function init() {
     LeftFoot.position.x = StartPoint;
     LeftFoot.position.y = 0.5;
     LeftFoot.position.z = 2;
-    scene.add(LeftFoot);
+    // scene.add(LeftFoot);
 
     var cubeGeometry = new THREE.BoxGeometry(0.5, 2, 0.5);
     var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
@@ -182,7 +180,7 @@ function init() {
     var neck=new THREE.Mesh(sphereGeometry,sphereMaterial);
     neck.receiveShadow=true;
     neck.position.x=StartPoint;
-    neck.position.y=10.5;
+    neck.position.y=10;
     neck.position.z=1.1;
     scene.add(neck);
 
@@ -191,7 +189,7 @@ function init() {
     var Head=new THREE.Mesh(HeadGeometry,HeadMaterial);
     Head.receiveShadow=true;
     Head.position.x=StartPoint;
-    Head.position.y=11.5;
+    Head.position.y=11;
     Head.position.z=1.1;
     scene.add(Head);
 
@@ -207,6 +205,7 @@ function init() {
         Head_tween.start();
         neck_tween.start();
         Body_tween.start();
+
     }
     //左脚右手
     var Arm1R_tween_po=new TWEEN.Tween(Arm1R.position);
@@ -265,10 +264,9 @@ function init() {
     var Knee_temp=KneeR.position.y;
     var SmallLeg_temp=SmallLegR.position.y;
     var Foot_temp=RightFoot.position.y;
-    function countpp() {
-        count++;
-    }
+
     function LeftGo() {
+
         HeadBodyGo();
         if(count==0)
         {
@@ -309,6 +307,7 @@ function init() {
             ElbowL_tween_po.to({x:StartPoint+5*Math.cos(-sita)-step,y:Elbow_temp+2.25*Math.sin(-sita)},1000);
             Arm2R_tween_po.to({x:StartPoint-7.5*Math.cos(-sita)-step,y:Arm2_temp-3*Math.sin(-sita)},1000);
             Arm2R_tween_ro.to({z:-2*sita},1000);
+
             Arm2L_tween_po.to({x:StartPoint+7.5*Math.cos(-sita)-step,y:Arm2_temp+3*Math.sin(-sita)},1000);
             Arm2L_tween_ro.to({z:2*sita},1000);
             HandR_tween_po.to({x:StartPoint-7.5*Math.cos(-sita)-step,y:Hand_temp-3.75*Math.sin(-sita)},1000);
@@ -358,6 +357,7 @@ function init() {
         StartPoint=Waist.position.x;
     }
     function RightGo() {
+
         HeadBodyGo();
         Arm1R_tween_poR.to({x:StartPoint+2*Math.cos(-sita)-step,y:Arm1_temp+Math.sin(-sita)},1000);
         Arm1R_tween_roR.to({z:2*sita},1000);
@@ -415,12 +415,12 @@ function init() {
         StartPoint=Waist.position.x;
     }
     // position and point the camera to the center of the scene
-    camera.position.x = -30;
+    camera.position.x = -25;
     camera.position.y = 40;
     camera.position.z = 30;
-    // camera.position.x=-20;
-    // camera.position.y=20;
-    // camera.position.z=20;
+    // camera.position.x=-45;
+    // camera.position.y=0;
+    // camera.position.z=0;
     camera.lookAt(scene.position);
 
 
@@ -451,7 +451,7 @@ function init() {
     //     .easing(TWEEN.Easing.Elastic.InOut);
     //     tween.start();
     function renderScene() {
-        stats.update();
+             stats.update();
              TWEEN.update();
              console.log(count);
              if(count%40==0)
@@ -465,11 +465,15 @@ function init() {
                 console.log("RightGo");
                 RightGo();
             }
-            count++;
+
+        if(count==1800)
+        {
+            window.location.reload();
+        }
+        count++;
         requestAnimationFrame(renderScene);
         renderer.render(scene,camera);
     }
-
     function initStats() {
         var stats=new Stats();
         // stats.setMode(0);
@@ -479,5 +483,7 @@ function init() {
         document.getElementById("Stats-output").appendChild(stats.domElement);
         return stats;
     }
+
+
 }
 window.onload = init;
