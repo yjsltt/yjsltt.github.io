@@ -41,7 +41,6 @@ function init() {
     spotLight.castShadow=true;
     scene.add(spotLight);
 
-
     //开始画机器人
     // create a sphere
     var sphereGeometry = new THREE.SphereGeometry(0.5, 10, 10);
@@ -192,6 +191,7 @@ function init() {
     Head.position.y=11;
     Head.position.z=1.1;
     scene.add(Head);
+    spotLight.target=Head;
 
 
     step=2*(2+0.5)*Math.sin(30*Math.PI/180);
