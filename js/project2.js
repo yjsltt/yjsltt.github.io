@@ -415,9 +415,9 @@ function init() {
         StartPoint=Waist.position.x;
     }
     // position and point the camera to the center of the scene
-    camera.position.x = -25;
+    camera.position.x = -15;//-15
     camera.position.y = 40;
-    camera.position.z = 30;
+    camera.position.z = 30;//30
     // camera.position.x=-45;
     // camera.position.y=0;
     // camera.position.z=0;

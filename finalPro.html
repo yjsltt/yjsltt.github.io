@@ -98,12 +98,13 @@
         spotLig1.intensity=0.05;
         spotLig1.decay=2;
         spotLig1.castShadow=true;
+//        spotLig1.angle=
         scene.add(spotLig1);
 
 
         var spherecenterGeo=new THREE.SphereGeometry(1,50,50);
         var spherecenterMat=new THREE.MeshPhongMaterial({
-            color:0xff0000});
+            color:0xffff00});
 //        spherecenterMat.emissive=new THREE.Color(0xffffff);
         spherecenterMat.shininess=16;
         var centersphere=new THREE.Mesh(spherecenterGeo,spherecenterMat);
@@ -112,20 +113,20 @@
         for(var i=0;i<10;i++)
         {
             var sphereGeo=new THREE.SphereGeometry(2,100,100);
-            var sphereMat=new THREE.MeshPhongMaterial({});
+            var sphereMat;
 
             if(i%2==0)
             {
-                sphereMat.color=new THREE.Color(0xff0000);
+                sphereMat=new THREE.MeshPhongMaterial({color:0xff0000});
             }
             else
             {
-                sphereMat.color=new THREE.Color(0x0000ff);
+                sphereMat=new THREE.MeshPhongMaterial({color:0x0000ff});
             }
             sphereMat.emissive=sphereMat.color;
             var sphere=new THREE.Mesh(sphereGeo,sphereMat);
             sphere.position.set(offcenter*Math.cos((Math.PI/5)*i),2,offcenter*Math.sin((Math.PI/5)*i));
-
+            sphere.receiveShadow=true;
             scene.add(sphere);
         }
         for(var i=0;i<10;i++)
@@ -143,6 +144,7 @@
             }
             sphereMat2.emissive=sphereMat2.color;
             var sphere2=new THREE.Mesh(sphereGeo2,sphereMat2);
+            sphere2.castShadow=true;
             sphere2.position.set(offcenter*2*Math.cos((Math.PI/5)*i),4,offcenter*2*Math.sin((Math.PI/5)*i));
             scene.add(sphere2);
         }
@@ -175,7 +177,8 @@
                 var Chess=new THREE.Mesh(ChessGeo,ChessMat);
                 Chess.position.set(-count-80+chessboard_size*i+chessboard_size*3/6+0.15,0,-count-80+chessboard_size*j-chessboard_size/6-0.135);
                 Chess.rotateX(Math.PI/2);
-                Chess.shadowMapEnabled=true;
+//                Chess.shadowMapEnabled=true;
+                Chess.receiveShadow=true;
                 scene.add(Chess);
             }
         }
