@@ -2,9 +2,224 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project4</title>
+    <title>The Earth</title>
+    <script src="js/three_69.js"></script>
+    <script src="js/Stats.js"></script>
+    <script src="js/dat.gui.js"></script>
+    <!--路径控制-->
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/PathControls.js"></script>
+    <!--模型加载-->
+    <script src="js/STLLoader.js"></script>
+    <script src="js/OBJLoader.js"></script>
+    <script src="js/MTLLoader.js"></script>
+    <script src="js/OBJMTLLoader.js"></script>
+    <!--后期-->
+    <script src="js/postprocessing/SavePass.js"></script>
+    <script src="js/postprocessing/ShaderPass.js"></script>
+    <script src="js/postprocessing/BloomPass.js"></script>
+    <script src="js/postprocessing/EffectComposer.js"></script>
+    <script src="js/postprocessing/MaskPass.js"></script>
+    <script src="js/postprocessing/FilmPass.js"></script>
+    <script src="js/postprocessing/RenderPass.js"></script>
+    <script src="js/postprocessing/TexturePass.js"></script>
+    <script src="js/shaders/CopyShader.js"></script>
+    <script src="js/shaders/ColorifyShader.js"></script>
+    <script src="js/shaders/ConvolutionShader.js"></script>
+    <script src="js/shaders/FilmShader.js"></script>
+    <script src="js/shaders/SepiaShader.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-<h1>Project4</h1>
+<div id="Stats-output">
+</div>
+<div id="WebGL-output">
+</div>
+<script type="text/javascript">
+function init() {
+    var WebGlRenderer=new THREE.WebGLRenderer();
+    WebGlRenderer.setClearColor(new THREE.Color(0x000,1.0));
+    WebGlRenderer.setSize(window.innerWidth,window.innerHeight);
+    WebGlRenderer.shadowMapEnabled=true;
+    document.getElementById("WebGL-output").appendChild(WebGlRenderer.domElement);
+    
+    var stats=initStats();
+    var clock=new THREE.Clock();
+
+
+//    背景
+    var sceneBg=new THREE.Scene();
+    var cameraBg=new THREE.OrthographicCamera(-window.innerWidth,window.innerWidth,window.innerHeight,-window.innerHeight,-10000,10000);
+    cameraBg.position.z=50;
+    sceneBg.add(cameraBg);
+
+    var bgMat=new THREE.MeshBasicMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture("images/Texture/solar/starry-deep-outer-space-galaxy.jpg"),
+                depthTest:false
+            }
+    );
+    var bgPlane=new THREE.Mesh(new THREE.PlaneGeometry(1,1),bgMat);
+    bgPlane.position.z=-100;
+    bgPlane.scale.set(window.innerWidth*2,window.innerHeight*2,1);
+    sceneBg.add(bgPlane);
+//背景的渲染通道
+    var bgPass = new THREE.RenderPass(sceneBg, cameraBg);
+
+
+//    地球
+    var sceneEarth = new THREE.Scene();
+
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    var alxs=new THREE.AxisHelper(200);
+    sceneEarth.add(alxs);
+
+    var sphere = createEarthMesh(new THREE.SphereGeometry(8, 40, 40));
+    sphere.position.set(0,0,0);
+    sceneEarth.add(sphere);
+    var ambi = new THREE.AmbientLight(0x181818);
+    sceneEarth.add(ambi);
+    var spotLight = new THREE.DirectionalLight(0xffffff);
+    spotLight.position.set(550, 100, 550);
+    spotLight.intensity = 0.6;
+    sceneEarth.add(spotLight);
+
+//    地球的渲染通道
+    var renderPass = new THREE.RenderPass(sceneEarth, camera);
+    renderPass.clear = false;
+    var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+    effectCopy.renderToScreen = true;
+//    人造卫星
+    var sceneMars = new THREE.Scene();
+//    var loader=new THREE.STLLoader();
+//    var group=new THREE.Object3D();
+//    loader.load("images/models/34M_17.stl",function (geometry) {
+//        console.log(geometry);
+//        var mat = new THREE.MeshLambertMaterial({color: 0x7777ff});
+//        group = new THREE.Mesh(geometry, mat);
+//        group.rotation.x = -0.5 * Math.PI;
+//        group.scale.set(0.06, 0.06, 0.06);
+//        sceneMars.add(group);
+//    });
+
+    var loader = new THREE.OBJMTLLoader();
+
+    loader.load('images/models/Z2.obj', 'images/models/Z2.mtl', function (object) {
+
+        object.scale.set(140, 140, 140);
+        var mesh = object;
+        sceneMars.add(mesh);
+
+        object.rotation.x = 0.2;
+        object.rotation.y = -1.3;
+    });
+//    loader.setMaterials('images/Texture/Materi/z2_spec_color_s.jpg');
+//    var mtlloader=new THREE.MTLLoader();
+//    mtlloader.load('images/models/Z2.mtl',function (materials) {
+//        materials.preload();
+//        var objloader=new THREE.OBJLoader();
+//        objloader.setMaterials(materials);
+//        objloader.load('images/models/Z2.obj')
+//    });
+
+
+
+
+
+
+//    后期渲染通道
+    var clearMask = new THREE.ClearMaskPass();
+    // earth mask
+    var earthMask = new THREE.MaskPass(sceneEarth, camera);
+        earthMask.inverse = true;
+
+    var effectSepia = new THREE.ShaderPass(THREE.SepiaShader);
+    effectSepia.uniforms['amount'].value = 0.8;
+
+    var effectColorify = new THREE.ShaderPass(THREE.ColorifyShader);
+    effectColorify.uniforms['color'].value.setRGB(0.5, 0.5, 1);
+
+    var marsMask = new THREE.MaskPass(sceneMars, camera);
+
+
+    // position and point the camera to the center of the scene
+    camera.position.x = -10;
+    camera.position.y = 15;
+    camera.position.z = 25;
+
+    camera.lookAt(new THREE.Vector3(0, 0,  0));
+
+    var orbitControls = new THREE.OrbitControls(camera);
+    orbitControls.autoRotate = false;
+
+//    定义一个效果组合器
+    var composer=new THREE.EffectComposer(WebGlRenderer);
+    composer.renderTarget1.stencilBuffer=true;
+//    composer.renderTarget2.stencilBuffer=true;
+//添加后期处理通道
+    composer.addPass(bgPass);
+    composer.addPass(renderPass);
+    composer.addPass(marsMask);
+    composer.addPass(effectColorify);
+    composer.addPass(clearMask);
+    composer.addPass(earthMask);
+    composer.addPass(effectSepia);
+    composer.addPass(clearMask);
+    composer.addPass(effectCopy);
+
+    render();
+
+
+    function createEarthMesh(geom) {
+        var planetTexture = THREE.ImageUtils.loadTexture("images/Texture/solar/Earth.png");
+        var specularTexture = THREE.ImageUtils.loadTexture("images/Texture/solar/EarthSpec.png");
+        var normalTexture = THREE.ImageUtils.loadTexture("images/texture/solar/EarthNormal.png");
+
+
+        var planetMaterial = new THREE.MeshPhongMaterial();
+        planetMaterial.specularMap = specularTexture;
+        planetMaterial.specular = new THREE.Color(0x4444aa);
+
+
+        planetMaterial.normalMap = normalTexture;
+        planetMaterial.map = planetTexture;
+//        planetMaterial.shininess = 150;
+
+
+        // create a multimaterial
+        var mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [planetMaterial]);
+
+        return mesh;
+    }
+    function render() {
+        WebGlRenderer.autoClear=false;
+        stats.update();
+
+        var delta=clock.getDelta();
+        orbitControls.update(delta);
+
+        sphere.rotation.y += 0.002;
+        requestAnimationFrame(render);
+//        使用效果组合器定时渲染场景
+        composer.render(delta);
+    }
+    function initStats() {
+        var stats=new Stats();
+        stats.domElement.style.position='absolute';
+        stats.domElement.style.left='0px';
+        stats.domElement.style.top='0px';
+        document.getElementById('Stats-output').appendChild(stats.domElement);
+        return stats;
+    }
+}
+window.onload = init;
+</script>
 </body>
 </html>

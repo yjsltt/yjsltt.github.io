@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Final Project-RayTracing</title>
+    <!--用于左半部分调用库函数的Raytracing-->
+    <script type="text/javascript" src="js/three.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Vector3.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Ray3.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Color.js"></script>
+    <script type="text/javascript" src="js/FinalPro/IntersectResult.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Sphere.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Plane.js"></script>
+    <script type="text/javascript" src="js/FinalPro/PhongMaterial.js"></script>
+    <script type="text/javascript" src="js/FinalPro/Union.js"></script>
+    <script type="text/javascript" src="js/FinalPro/CheckerMaterial.js"></script>
+    <script type="text/javascript" src="js/FinalPro/PerspectiveCamera.js"></script>
+
+
+    <style>
+        *{
+            margin:0px;
+            padding: 0px;
+            /*background-color: #1c1c1c;*/
+            /*!*visibility: hidden;*!*/
+            /*display: inline;*/
+        }
+        #left_part{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+        }
+        #right_part{
+            position: absolute;
+            top: 0px;
+            right: 0px;
+        }
+    </style>
+</head>
+
+<!--需要分成两个部分，左边为使用three.js库作出的图，右边使用自己写的全局光照作出的图-->
+<body>
+<div>
+    <!--用three.js作图-->
+    <div id="left_part">
+
+    </div>
+
+    <!--用-->
+    <canvas id="right_part">
+
+    </canvas>
+</div>
+
+<script type="text/javascript">
+    function init() {
+        var width=window.innerWidth/2;
+        var height=window.innerHeight;
+//        这些共有参数先随便设，之后再来调整
+        var eye_x=20;
+        var eye_y=44;
+        var eye_z=-1;
+        var ambientLig_color=new THREE.Color(255,255,255);
+        var spotLig_color=new THREE.Color(255,255,255);
+        var spotLig_x=-1000;
+        var spotLig_y=300;
+        var spotLig_z=450;
+        var chessboard_size=5.68;
+
+        var sphereradius=2.2;
+        var offcenter=10;
+        var numsphere=Math.PI/Math.atan(sphereradius/offcenter);
+        console.log(numsphere);
+        /**
+         three.js部分
+         */
+//TODO:如何利用three.js构造反射
+        var WebGlRenderer=new THREE.WebGLRenderer();
+        WebGlRenderer.setClearColor(new THREE.Color(0x1c1c1c));
+        WebGlRenderer.setSize(width,height);
+        WebGlRenderer.shadowMapEnabled=true;
+        document.getElementById("left_part").appendChild(WebGlRenderer.domElement);
+
+        var scene=new THREE.Scene();
+        var camera_webgl=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
+
+        camera_webgl.position.set(0,eye_y,0);
+        camera_webgl.lookAt(scene.position);
+//        为了保证左右两个画面能够相接，之后必须对相机的lookat进行偏移
+        camera_webgl.setViewOffset(width*2,height,0,0,width,height);
+        scene.add(camera_webgl);
+        var axis=new THREE.AxisHelper(20);
+//        scene.add(axis);
+//添加光源
+
+        var spotLig1=new THREE.SpotLight(spotLig_color);
+        spotLig1.position.set(spotLig_x,spotLig_y,-spotLig_z);
+        spotLig1.intensity=0.05;
+        spotLig1.decay=2;
+        spotLig1.castShadow=true;
+        scene.add(spotLig1);
+
+
+        var spherecenterGeo=new THREE.SphereGeometry(1,50,50);
+        var spherecenterMat=new THREE.MeshPhongMaterial({
+            color:0xff0000});
+//        spherecenterMat.emissive=new THREE.Color(0xffffff);
+        spherecenterMat.shininess=16;
+        var centersphere=new THREE.Mesh(spherecenterGeo,spherecenterMat);
+        centersphere.position.set(0,1,0);
+//        scene.add(centersphere);
+        for(var i=0;i<10;i++)
+        {
+            var sphereGeo=new THREE.SphereGeometry(2,100,100);
+            var sphereMat=new THREE.MeshPhongMaterial({});
+
+            if(i%2==0)
+            {
+                sphereMat.color=new THREE.Color(0xff0000);
+            }
+            else
+            {
+                sphereMat.color=new THREE.Color(0x0000ff);
+            }
+            sphereMat.emissive=sphereMat.color;
+            var sphere=new THREE.Mesh(sphereGeo,sphereMat);
+            sphere.position.set(offcenter*Math.cos((Math.PI/5)*i),2,offcenter*Math.sin((Math.PI/5)*i));
+
+            scene.add(sphere);
+        }
+        for(var i=0;i<10;i++)
+        {
+            var sphereGeo2=new THREE.SphereGeometry(4,100,100);
+            var sphereMat2=new THREE.MeshPhongMaterial({});
+
+            if(i%2==0)
+            {
+                sphereMat2.color=new THREE.Color(0xff0000);
+            }
+            else
+            {
+                sphereMat2.color=new THREE.Color(0x0000ff);
+            }
+            sphereMat2.emissive=sphereMat2.color;
+            var sphere2=new THREE.Mesh(sphereGeo2,sphereMat2);
+            sphere2.position.set(offcenter*2*Math.cos((Math.PI/5)*i),4,offcenter*2*Math.sin((Math.PI/5)*i));
+            scene.add(sphere2);
+        }
+//添加棋盘格平面
+        var count=40;
+        for(var i=0;i<count;i++)
+        {
+            for(var j=0;j<count;j++)
+            {
+                var ChessGeo=new THREE.PlaneGeometry(chessboard_size,chessboard_size);
+                var ChessMat=new THREE.MeshPhongMaterial({side:THREE.DoubleSide});
+                switch (i%2){
+                    case 0:
+                        if(j%2==0)
+                            ChessMat.color=new THREE.Color(255,255,255);
+                        else
+                            ChessMat.color=new THREE.Color(0,0,0);
+
+                        break;
+                    case 1:
+                        if(j%2==0)
+                            ChessMat.color=new THREE.Color(0,0,0);
+                        else
+                            ChessMat.color=new THREE.Color(255,255,255);
+                        break;
+                }
+                ChessMat.emissive=ChessMat.color;
+//                ChessMat.refractionRatio=reflec;
+//                ChessMat.emissiveIntensity=emiss;
+                var Chess=new THREE.Mesh(ChessGeo,ChessMat);
+                Chess.position.set(-count-80+chessboard_size*i+chessboard_size*3/6+0.15,0,-count-80+chessboard_size*j-chessboard_size/6-0.135);
+                Chess.rotateX(Math.PI/2);
+                Chess.shadowMapEnabled=true;
+                scene.add(Chess);
+            }
+        }
+        console.log(scene.position);
+        WebGlRenderer.render(scene, camera_webgl);
+
+        /**
+         * DIY部分
+         */
+
+        var DIYcanvas=document.getElementById('right_part');
+        DIYcanvas.width=width;
+        DIYcanvas.height=height;
+        DIYcanvas.backgroundColor=new THREE.Color(0x1c1c1c);
+
+
+
+
+
+
+        /**
+         *
+         * @param canvas
+         * @param scene
+         * @param camera
+         */
+        function rayTrace(canvas, scene, camera) {
+            if (!canvas || !canvas.getContext)
+                return;
+
+            var ctx = canvas.getContext("2d");
+            if (!ctx.getImageData)
+                return;
+
+            var w = canvas.attributes.width.value;
+            var h = canvas.attributes.height.value;
+            ctx.fillStyle ="rgb(28,28,28)";
+            ctx.fillRect(0, 0, w, h);
+
+            var imgdata = ctx.getImageData(0, 0, w, h);
+            var pixels = imgdata.data;
+
+            scene.initialize();
+            camera.initialize();
+
+            var i = 0;
+            for (var y = 0; y < h; y++) {
+                var sy = 1 - y / h;
+                for (var x = 0; x < w; x++) {
+                    var sx = x / w;
+                    var ray = camera.generateRay(sx, sy);
+                    var result = scene.intersect(ray);
+
+                    if (result.geometry) {
+//                        console.log(result);
+                        var color = result.geometry.material.sample(ray, result.position, result.normal);
+                        pixels[i] = color.r * 255;
+                        pixels[i + 1] = color.g * 255;
+                        pixels[i + 2] = color.b * 255;
+                        pixels[i + 3] = 255;
+                    }
+                    i += 4;
+                }
+            }
+
+            ctx.putImageData(imgdata, 0, 0);
+        }
+
+
+//
+        var temp_r=0.013;
+        var plane = new Plane(new Vector3(1, 1, 1), 0);
+        var spherex= new Sphere(new Vector3(19.9, -temp_r, -1.25), temp_r);
+        var spherey = new Sphere(new Vector3(19.8, -temp_r, -1.30), temp_r);
+        var spherez=new Sphere(new Vector3(19.8,-temp_r,-1.33),temp_r);
+        var center=new Sphere(new Vector3(19.99,-temp_r/2,-1.2757),temp_r/2)
+        plane.material = new CheckerMaterial(20);
+        spherex.material = new PhongMaterial(Color.red, Color.white, 10);
+        spherey.material = new PhongMaterial(Color.green, Color.white, 10);
+        spherez.material = new PhongMaterial(Color.blue, Color.white, 10);
+        center.material=new PhongMaterial(Color.red,Color.white,10);
+        rayTrace(
+                DIYcanvas,
+                new Union([plane,spherex,spherey,spherez,center]),
+                new PerspectiveCamera(new Vector3(eye_x,eye_y,eye_z), new Vector3(0,-1,-0.00625).normalize(), new Vector3(0, -1, 0), 45,width/height));
+//       Vector3(0,-0.6,-0.3)
+//        var plane = new Plane(new Vector3(0, 1, 0), 0);
+//        var sphere3 = new Sphere(new Vector3(-10, 10, -10), 10);
+//        var sphere4 = new Sphere(new Vector3(10, 10, -10), 10);
+//        plane.material = new CheckerMaterial(0.1);
+//        sphere3.material = new PhongMaterial(Color.red, Color.white, 16);
+//        sphere4.material = new PhongMaterial(Color.blue, Color.white, 16);
+//
+//        rayTrace(
+//                DIYcanvas,
+//                new Union([plane, sphere3, sphere4]),
+//                new PerspectiveCamera(new Vector3(0, 5, 15), new Vector3(0, 0, -1), new Vector3(0, 1, 0), 90,width/height),
+//                3);
+    }
+
+
+
+
+
+
+
+    window.onload=init();
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ function init() {
     var StartPoint=40;
     // renderer.setClearColorHex();
     renderer.setClearColor(new THREE.Color(0xEEEEEE));
-    renderer.setSize(window.innerWidth, 887);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMapEnabled=true;
 
     var stats=initStats();
