@@ -78,8 +78,8 @@ function init() {
 
     var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    var alxs=new THREE.AxisHelper(200);
-    sceneEarth.add(alxs);
+//    var alxs=new THREE.AxisHelper(200);
+//    sceneEarth.add(alxs);
 
     var sphere = createEarthMesh(new THREE.SphereGeometry(8, 40, 40));
     sphere.position.set(0,0,0);
@@ -109,17 +109,17 @@ function init() {
 //        sceneMars.add(group);
 //    });
 
-    var loader = new THREE.OBJMTLLoader();
+//    var loader = new THREE.OBJMTLLoader();
 
-    loader.load('images/models/Z2.obj', 'images/models/Z2.mtl', function (object) {
-
-        object.scale.set(140, 140, 140);
-        var mesh = object;
-        sceneMars.add(mesh);
-
-        object.rotation.x = 0.2;
-        object.rotation.y = -1.3;
-    });
+//    loader.load('images/models/Z2.obj', 'images/models/Z2.mtl', function (object) {
+//
+//        object.scale.set(140, 140, 140);
+//        var mesh = object;
+//        sceneMars.add(mesh);
+//        object.scale=0.01;
+//        object.rotation.x = 0.2;
+//        object.rotation.y = -1.3;
+//    });
 //    loader.setMaterials('images/Texture/Materi/z2_spec_color_s.jpg');
 //    var mtlloader=new THREE.MTLLoader();
 //    mtlloader.load('images/models/Z2.mtl',function (materials) {
